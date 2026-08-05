@@ -200,17 +200,23 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 @media(max-width:720px){.igrid{grid-template-columns:repeat(2,1fr);gap:.8rem}}
 @media(max-width:460px){.igrid{grid-template-columns:1fr;width:min(320px,100%)}}
 .igcard{position:relative;display:block;border:var(--edge);border-radius:16px;overflow:hidden;background:var(--ink);
-  box-shadow:var(--pop-sm);transition:transform .16s;text-decoration:none}
+  box-shadow:var(--pop-sm);transition:transform .16s;text-decoration:none;padding:0;cursor:pointer;
+  font:inherit;color:inherit;width:100%;text-align:left}
 .igcard:hover{transform:translateY(-4px)}
 .igcard video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block}
+.igtitle{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:2rem .7rem .6rem;
+  font-family:var(--display);font-weight:900;font-size:.95rem;line-height:1.1;color:var(--paper);
+  background:linear-gradient(transparent,rgba(12,10,9,.88));pointer-events:none}
 .igcard .views{position:absolute;top:10px;left:10px;z-index:3;font-family:var(--mono);font-size:.66rem;
   letter-spacing:.12em;background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:.18rem .65rem;
   pointer-events:none}
 .igcard.hot .views{background:var(--gold)}
-.igcard .goig{position:absolute;right:10px;bottom:10px;z-index:3;font-family:var(--mono);font-size:.62rem;
-  letter-spacing:.12em;background:rgba(20,17,16,.72);color:var(--paper);border-radius:99px;padding:.2rem .6rem;
-  opacity:0;transition:opacity .18s;pointer-events:none}
-.igcard:hover .goig{opacity:1}
+/* play affordance on hover */
+.igcard::after{content:"▶";position:absolute;top:50%;left:50%;translate:-50% -50%;z-index:2;
+  width:46px;height:46px;display:grid;place-items:center;padding-left:3px;
+  border-radius:50%;background:rgba(243,231,211,.92);border:3px solid var(--ink);
+  font-size:.95rem;color:var(--ink);opacity:0;transition:opacity .18s;pointer-events:none}
+.igcard:hover::after{opacity:1}
 
 /* reel viewer */
 .reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
@@ -223,6 +229,9 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
   background:linear-gradient(transparent,rgba(12,10,9,.85));pointer-events:none}
 .reel-cap b{display:block;font-family:var(--display);font-weight:900;font-size:1.3rem;line-height:1.05}
 .reel-cap span{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+.reel-cap a{pointer-events:auto;display:inline-block;margin-top:.5rem;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;
+  border-bottom:2px solid var(--gold);padding-bottom:.1rem}
 .reel-nav{width:clamp(44px,5vw,58px);height:clamp(44px,5vw,58px);flex:0 0 auto;border-radius:50%;
   border:3px solid var(--paper);background:transparent;color:var(--paper);font-size:1.3rem;cursor:pointer;
   display:grid;place-items:center;transition:background .15s,color .15s}
@@ -623,7 +632,10 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
   <button class="reel-nav prev" id="reelPrev" aria-label="Previous episode">‹</button>
   <div class="reel-stage">
     <video id="reelVideo" playsinline loop controls></video>
-    <div class="reel-cap"><span id="reelNum"></span><b id="reelTitle"></b></div>
+    <div class="reel-cap">
+      <span id="reelNum"></span><b id="reelTitle"></b>
+      <a id="reelIG" href="#" target="_blank" rel="noopener">Watch on Instagram ↗</a>
+    </div>
   </div>
   <button class="reel-nav next" id="reelNext" aria-label="Next episode">›</button>
   <div class="reel-dots" id="reelDots"></div>
@@ -793,13 +805,13 @@ const BIZ_EMAIL = 'hello@furrealtwin.com';
    Video files live in assets/video/reels/<id>.mp4 (pulled from the account,
    silent preview loops); clicking a card opens the real reel on Instagram. */
 const REELS = [
-  { id:'DbeJg2_hvGj', views:322000 },
-  { id:'DbbV6Rgxzgi', views:28000  },
-  { id:'DbZKWQRhiry', views:17500  },
-  { id:'Dblj8EsxNXZ', views:15300  },
-  { id:'DbYr6wUBIfZ', views:9488   },
-  { id:'DbqBKhGRaeY', views:1547   },
-  { id:'DbqfFF_RRDT', views:256    },
+  { id:'DbeJg2_hvGj', views:322000, title:'Mama’s Side of the Bed' },
+  { id:'DbbV6Rgxzgi', views:28000,  title:'The Box Ambush' },
+  { id:'DbZKWQRhiry', views:17500,  title:'Laser Tag' },
+  { id:'Dblj8EsxNXZ', views:15300,  title:'Don’t Go To Work' },
+  { id:'DbYr6wUBIfZ', views:9488,   title:'May the Paws Be With You' },
+  { id:'DbqBKhGRaeY', views:1547,   title:'Never Sit Still' },
+  { id:'DbqfFF_RRDT', views:256,    title:'Rey and Her Sunflowers' },
 ];
 const HOT = 9000;
 
@@ -812,12 +824,13 @@ const HOT = 9000;
     if(ha !== hb) return ha ? -1 : 1;
     return b.views - a.views;
   });
-  sorted.forEach(r=>{
-    const card = document.createElement('a');
+  window.PLAYLIST = sorted;
+  sorted.forEach((r,idx)=>{
+    const card = document.createElement('button');
     card.className = 'igcard' + (r.views >= HOT ? ' hot' : '');
-    card.href = 'https://www.instagram.com/reel/' + r.id + '/';
-    card.target = '_blank'; card.rel = 'noopener';
-    card.setAttribute('aria-label', 'Watch this episode on Instagram');
+    card.type = 'button';
+    card.dataset.idx = idx;
+    card.setAttribute('aria-label', 'Play ' + r.title);
     const chip = document.createElement('span');
     chip.className = 'views';
     chip.textContent = '▶ ' + fmt(r.views);
@@ -825,10 +838,10 @@ const HOT = 9000;
     v.src = 'assets/video/reels/' + r.id + '.mp4';
     v.poster = 'assets/img/reels/' + r.id + '.jpg';
     v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
-    const go = document.createElement('span');
-    go.className = 'goig';
-    go.textContent = 'Watch on IG ↗';
-    card.append(v, chip, go);
+    const cap = document.createElement('span');
+    cap.className = 'igtitle';
+    cap.textContent = r.title;
+    card.append(v, chip, cap);
     grid.appendChild(card);
   });
 
@@ -849,34 +862,36 @@ const HOT = 9000;
    arrow through the rest without leaving the player.
 ------------------------------------------------------------------ */
 (function reelViewer(){
-  const eps = [...document.querySelectorAll('#eps .ep')].map(ep=>({
-    src:   ep.querySelector('video') ? ep.querySelector('video').getAttribute('src') : null,
-    poster:ep.querySelector('video') ? ep.querySelector('video').getAttribute('poster') : '',
-    num:   ep.querySelector('.num').textContent,
-    title: ep.querySelector('.ep-meta h3').textContent
-  })).filter(e=>e.src);
-  if(!eps.length) return;   /* Instagram embeds are mounted — they play in place */
+  const eps = window.PLAYLIST || [];
+  if(!eps.length) return;
 
   const box   = document.getElementById('reel');
   const video = document.getElementById('reelVideo');
   const dots  = document.getElementById('reelDots');
+  const fmt   = v => v >= 1000 ? (v/1000).toFixed(v >= 100000 ? 0 : 1).replace(/\.0$/,'') + 'K' : '' + v;
   let i = 0;
 
-  eps.forEach(()=>dots.appendChild(document.createElement('i')));
+  video.removeAttribute('loop');   /* let it end so we can advance */
+  eps.forEach((_,n)=>{
+    const d = document.createElement('i');
+    d.addEventListener('click', ()=>show(n));
+    dots.appendChild(d);
+  });
 
   function show(n){
     i = (n + eps.length) % eps.length;
     const e = eps[i];
-    video.src = e.src;
-    video.poster = e.poster;
-    document.getElementById('reelNum').textContent = e.num;
+    video.src = 'assets/video/reels/' + e.id + '.mp4';
+    video.poster = 'assets/img/reels/' + e.id + '.jpg';
+    document.getElementById('reelNum').textContent = '▶ ' + fmt(e.views) + ' views';
     document.getElementById('reelTitle').textContent = e.title;
+    document.getElementById('reelIG').href = 'https://www.instagram.com/reel/' + e.id + '/';
     [...dots.children].forEach((d,x)=>d.classList.toggle('on', x===i));
     video.muted = false;
     video.play().catch(()=>{ video.muted = true; video.play().catch(()=>{}); });
   }
   function open(n){
-    document.querySelectorAll('#eps video').forEach(v=>v.pause());
+    document.querySelectorAll('.igcard video').forEach(v=>v.pause());
     box.classList.add('open');
     document.body.style.overflow = 'hidden';
     show(n);
@@ -885,18 +900,17 @@ const HOT = 9000;
     box.classList.remove('open');
     document.body.style.overflow = '';
     video.pause(); video.removeAttribute('src'); video.load();
+    document.querySelectorAll('.igcard video').forEach(v=>{
+      const r = v.getBoundingClientRect();
+      if(r.top < innerHeight && r.bottom > 0) v.play().catch(()=>{});
+    });
   }
 
-  document.querySelectorAll('#eps .ep').forEach((ep,n)=>{
-    const phone = ep.querySelector('.phone');
-    if(!phone || !ep.querySelector('video')) return;
-    const hint = document.createElement('div');
-    hint.className = 'playhint';
-    const dot = document.createElement('span');
-    dot.textContent = '▶';
-    hint.appendChild(dot);
-    phone.appendChild(hint);
-    phone.addEventListener('click', ()=>open(n));
+  /* slideshow: when one finishes, roll straight into the next */
+  video.addEventListener('ended', ()=>show(i+1));
+
+  document.querySelectorAll('.igcard').forEach(card=>{
+    card.addEventListener('click', ()=>open(+card.dataset.idx));
   });
 
   document.getElementById('reelPrev').addEventListener('click', ()=>show(i-1));
