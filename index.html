@@ -934,12 +934,33 @@ const HOT = 9000;
   });
 })();
 
-/* waitlist — front-end only until an email provider is connected */
+/* ---------------------------------------------------------------
+   SIGNUP LIST — posts to a Google Apps Script that appends to the
+   owners' private sheet. Paste the /exec URL from SIGNUP_BACKEND.md
+   below; until then submissions are accepted but only logged locally.
+------------------------------------------------------------------ */
+const SIGNUP_ENDPOINT = '';   // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+
 const form = document.getElementById('waitlist');
 form.addEventListener('submit', (e)=>{
   e.preventDefault();
   const input = form.querySelector('input');
-  if(!input.value.includes('@')){ input.focus(); input.style.borderColor = '#d9998f'; return; }
+  const email = input.value.trim();
+  if(!email.includes('@') || !email.includes('.')){
+    input.focus(); input.style.borderColor = '#d9998f'; return;
+  }
+  input.style.borderColor = '';
+
+  if(SIGNUP_ENDPOINT){
+    const body = new URLSearchParams({ email, source: 'site' });
+    /* no-cors: Apps Script doesn't send CORS headers, and we don't need
+       to read the reply — the sheet is the source of truth */
+    fetch(SIGNUP_ENDPOINT, { method:'POST', mode:'no-cors', body })
+      .catch(()=>{});
+  } else {
+    console.info('[signup] no endpoint set yet:', email);
+  }
+
   document.getElementById('formOk').classList.add('show');
   form.reset();
 });
