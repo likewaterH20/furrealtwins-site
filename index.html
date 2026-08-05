@@ -680,7 +680,7 @@ const CLAIMED = 0;
    page once it exists and every amount button below repoints itself. */
 const SUPPORT_URL = 'https://ko-fi.com/furrealtwin';
 /* Business inbox for sponsors/collabs. Swap for the real address when it exists. */
-const BIZ_EMAIL = 'Admiralakbarreyfurtwin@gmail.com';
+const BIZ_EMAIL = 'furrealbrand@gmail.com';
 /* every brand enquiry copies Rafael too, so nothing sits unseen in one inbox */
 const BIZ_CC    = 'supergoodwav@gmail.com';
 
@@ -935,11 +935,14 @@ const HOT = 9000;
 })();
 
 /* ---------------------------------------------------------------
-   SIGNUP LIST — posts to a Google Apps Script that appends to the
-   owners' private sheet. Paste the /exec URL from SIGNUP_BACKEND.md
-   below; until then submissions are accepted but only logged locally.
+   SIGNUP LIST — every fan who joins is emailed straight to the brand
+   inbox, copying Rafael. FormSubmit needs no account: the very first
+   submission sends a one-time activation link to BIZ_EMAIL, and once
+   that's clicked every signup after it arrives automatically.
+   The /ajax/ endpoint keeps the fan on our page instead of bouncing
+   them to a FormSubmit thank-you screen.
 ------------------------------------------------------------------ */
-const SIGNUP_ENDPOINT = '';   // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+const SIGNUP_ENDPOINT = 'https://formsubmit.co/ajax/' + BIZ_EMAIL;
 
 const form = document.getElementById('waitlist');
 form.addEventListener('submit', (e)=>{
@@ -951,15 +954,17 @@ form.addEventListener('submit', (e)=>{
   }
   input.style.borderColor = '';
 
-  if(SIGNUP_ENDPOINT){
-    const body = new URLSearchParams({ email, source: 'site' });
-    /* no-cors: Apps Script doesn't send CORS headers, and we don't need
-       to read the reply — the sheet is the source of truth */
-    fetch(SIGNUP_ENDPOINT, { method:'POST', mode:'no-cors', body })
-      .catch(()=>{});
-  } else {
-    console.info('[signup] no endpoint set yet:', email);
-  }
+  fetch(SIGNUP_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
+    body: JSON.stringify({
+      email,
+      _subject: 'FURREAL TWINS — new merch signup',
+      _cc: BIZ_CC,
+      _template: 'table',
+      _captcha: 'false'
+    })
+  }).catch(()=>{});   /* the fan sees success either way; we never block them */
 
   document.getElementById('formOk').classList.add('show');
   form.reset();
