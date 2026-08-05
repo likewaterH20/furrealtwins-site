@@ -195,6 +195,21 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
   min-width:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 .ig-note{margin-top:1.6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft);opacity:.75}
 
+/* instagram grid */
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.1rem}
+.igcard{position:relative;border:var(--edge);border-radius:16px;overflow:hidden;background:#fff;
+  box-shadow:var(--pop-sm);transition:transform .16s;padding-top:40px}
+.igcard::before{content:"";position:absolute;top:0;left:0;right:0;height:40px;background:var(--paper-2);
+  border-bottom:2px solid var(--ink)}
+.igcard:hover{transform:translateY(-4px)}
+.igcard .views{position:absolute;top:7px;left:10px;z-index:3;font-family:var(--mono);font-size:.66rem;
+  letter-spacing:.12em;background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:.18rem .65rem;
+  pointer-events:none}
+.igcard.hot .views{background:var(--gold)}
+.igcard .instagram-media{width:100%!important;min-width:0!important;max-width:none!important;
+  margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:static!important;
+  min-height:440px}
+
 /* reel viewer */
 .reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
   align-items:center;justify-content:center;gap:clamp(.6rem,2vw,2rem);padding:clamp(.6rem,2vw,2rem)}
@@ -379,7 +394,7 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
       </div>
     </div>
     <div style="position:relative">
-      <span class="sticker a">▶ 600K views</span>
+      <span class="sticker a">▶ 678K views</span>
       <div class="tv">
         <video src="assets/video/hero.mp4" poster="assets/img/hero-poster.jpg" autoplay muted loop playsinline></video>
         <span class="live">ON AIR · CH.09</span><span class="knob"></span>
@@ -458,31 +473,14 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
 
 <section id="watch" class="wrap rise">
   <div class="sec-head">
-    <h2>Meet them in motion</h2>
-    <p>Thirty seconds each, no dialogue, sound on. Every play here counts on the Instagram post.</p>
+    <h2>Watch the chaos</h2>
+    <p>Straight from Instagram — every play counts on the post. Biggest episodes first.</p>
   </div>
-  <div class="eps" id="eps">
-    <article class="ep" data-ep="1">
-      <div class="phone"><span class="num">EP 01</span>
-        <video src="assets/video/ep1.mp4" poster="assets/img/ep1-poster.jpg" muted loop playsinline preload="none" controls></video>
-      </div>
-      <div class="ep-meta"><span class="len">0:29</span><h3>When Mama Leaves</h3><p>The door clicks shut. The warm spot on the couch is now unclaimed territory.</p></div>
-    </article>
-    <article class="ep" data-ep="2">
-      <div class="phone"><span class="num">EP 02</span>
-        <video src="assets/video/ep2.mp4" poster="assets/img/ep2-poster.jpg" muted loop playsinline preload="none" controls></video>
-      </div>
-      <div class="ep-meta"><span class="len">0:29</span><h3>May the Paws Be With You</h3><p>A duel plays on the TV. Rey becomes the training dummy she never agreed to be.</p></div>
-    </article>
-    <article class="ep" data-ep="3">
-      <div class="phone"><span class="num">EP 03</span>
-        <video src="assets/video/ep3.mp4" poster="assets/img/ep3-poster.jpg" muted loop playsinline preload="none" controls></video>
-      </div>
-      <div class="ep-meta"><span class="len">0:29</span><h3>Follow the Laser</h3><p>A red dot appears. Physics, furniture and dignity are all treated as optional.</p></div>
-    </article>
+  <div class="igrid" id="igrid"></div>
+  <div class="btns" style="margin-top:2rem">
+    <a class="btn solid" data-follow href="#" target="_blank" rel="noopener">See all on Instagram ↗</a>
+    <a class="btn gold" href="#shop">Take one home →</a>
   </div>
-  <p class="ig-note" id="igNote">Hosted locally — drop the three Reel URLs into <code>IG_REELS</code> in the page script to switch these to real Instagram embeds, so plays count on the account.</p>
-  <div class="btns" style="margin-top:2rem"><a class="btn gold" href="#shop">Take one home →</a></div>
 </section>
 
 <section id="twins" class="wrap rise">
@@ -578,7 +576,7 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
   </div>
 
   <div class="brands-cta">
-    <p><b>One post hit 600K views in a day.</b> The audience is cat people with wallets, and the format is built for products that live in a home. Tell us what you make — we'll pitch you the episode.</p>
+    <p><b>Our top episode is at 678K views and climbing.</b> The audience is cat people with wallets, and the format is built for products that live in a home. Tell us what you make — we'll pitch you the episode.</p>
     <a class="btn" id="brandsMail" href="#">Pitch us your brand →</a>
   </div>
   <p class="brands-note">Replies within 48 hours · we say no to anything the cats wouldn't plausibly sit on, eat, or destroy</p>
@@ -659,7 +657,7 @@ document.querySelectorAll('.rise').forEach(el=>io.observe(el));
    and headline number recalculates from this one value.
    Each product's threshold lives in its data-unlock attribute.
 ------------------------------------------------------------------ */
-const FOLLOWERS = 3000;
+const FOLLOWERS = 3272;
 const IG_HANDLE = 'furrealtwin';
 /* numbered edition: how many tees have been claimed so far.
    The cap itself lives on the card as data-cap. 120 × $34 ≈ $4,080. */
@@ -784,43 +782,58 @@ const BIZ_EMAIL = 'hello@furrealtwin.com';
   });
 })();
 
-const IG_REELS = [
-  // "https://www.instagram.com/reel/XXXXXXXXXXX/",   // EP 01 — When Mama Leaves
-  // "https://www.instagram.com/reel/XXXXXXXXXXX/",   // EP 02 — May the Paws Be With You
-  // "https://www.instagram.com/reel/XXXXXXXXXXX/",   // EP 03 — Follow the Laser
+/* ---------------------------------------------------------------
+   REAL INSTAGRAM REELS — pulled from @furrealtwin 2026-08-05.
+   Sorted 9K+ first, then the rest; views desc inside each bucket.
+   To refresh: update views / add new shortcodes, keep the same shape.
+------------------------------------------------------------------ */
+const REELS = [
+  { id:'DbYTY9zxDGm', views:678000 },
+  { id:'DbeJg2_hvGj', views:322000 },
+  { id:'Dbgxp7FxxK6', views:45500  },
+  { id:'DbgSnyqRNsK', views:40200  },
+  { id:'DbiwI5TxPTl', views:39000  },
+  { id:'DbbV6Rgxzgi', views:28000  },
+  { id:'DbbDX7cxcuV', views:21700  },
+  { id:'DbZKWQRhiry', views:17500  },
+  { id:'Dblj8EsxNXZ', views:15300  },
+  { id:'DbcCM25xkPC', views:14400  },
+  { id:'DbYr6wUBIfZ', views:9488   },
+  { id:'DbYsva9hi_H', views:9122   },
+  { id:'Dbdaz67xYTH', views:8319   },
+  { id:'DblKBK1RFmZ', views:5691   },
+  { id:'DboLfeqRmJg', views:2823   },
+  { id:'DbqBKhGRaeY', views:1547   },
+  { id:'DbqdWNOR_af', views:260    },
+  { id:'DbqfFF_RRDT', views:256    },
 ];
+const HOT = 9000;
 
-(function mountInstagram(){
-  const eps = [...document.querySelectorAll('#eps .ep')];
-
-  /* every episode links out to the channel, embedded or not */
-  eps.forEach((ep,i)=>{
-    const a = document.createElement('a');
-    a.className = 'ig';
-    a.href = IG_REELS[i] || ('https://www.instagram.com/' + IG_HANDLE + '/reels/');
-    a.target = '_blank'; a.rel = 'noopener';
-    a.textContent = 'Watch on Instagram ↗';
-    ep.querySelector('.ep-meta').appendChild(a);
+(function mountReels(){
+  const grid = document.getElementById('igrid');
+  if(!grid) return;
+  const fmt = v => v >= 1000 ? (v/1000).toFixed(v >= 100000 ? 0 : 1).replace(/\.0$/,'') + 'K' : '' + v;
+  const sorted = [...REELS].sort((a,b)=>{
+    const ha = a.views >= HOT, hb = b.views >= HOT;
+    if(ha !== hb) return ha ? -1 : 1;
+    return b.views - a.views;
   });
-
-  if(IG_REELS.length < eps.length) return;   /* not configured yet — keep local players */
-
-  eps.forEach((ep,i)=>{
-    const phone = ep.querySelector('.phone');
-    const num = phone.querySelector('.num');
+  sorted.forEach(r=>{
+    const card = document.createElement('div');
+    card.className = 'igcard' + (r.views >= HOT ? ' hot' : '');
+    const chip = document.createElement('span');
+    chip.className = 'views';
+    chip.textContent = '▶ ' + fmt(r.views);
     const quote = document.createElement('blockquote');
     quote.className = 'instagram-media';
-    quote.setAttribute('data-instgrm-permalink', IG_REELS[i]);
+    quote.setAttribute('data-instgrm-permalink', 'https://www.instagram.com/reel/' + r.id + '/');
     quote.setAttribute('data-instgrm-version', '14');
-    phone.replaceChildren(num, quote);
-    phone.classList.add('ig-embed');
+    card.append(chip, quote);
+    grid.appendChild(card);
   });
-
   const s = document.createElement('script');
   s.async = true; s.src = 'https://www.instagram.com/embed.js';
   document.body.appendChild(s);
-  const note = document.getElementById('igNote');
-  if(note) note.remove();
 })();
 
 /* ---------------------------------------------------------------
