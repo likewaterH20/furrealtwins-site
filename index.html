@@ -199,20 +199,18 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:min(880px,100%);margin-inline:auto;align-items:start}
 @media(max-width:720px){.igrid{grid-template-columns:repeat(2,1fr);gap:.8rem}}
 @media(max-width:460px){.igrid{grid-template-columns:1fr;width:min(320px,100%)}}
-.igcard{position:relative;border:var(--edge);border-radius:16px;overflow:hidden;background:#fff;
-  box-shadow:var(--pop-sm);transition:transform .16s;padding-top:40px}
-.igcard::before{content:"";position:absolute;top:0;left:0;right:0;height:40px;background:var(--paper-2);
-  border-bottom:2px solid var(--ink)}
+.igcard{position:relative;display:block;border:var(--edge);border-radius:16px;overflow:hidden;background:var(--ink);
+  box-shadow:var(--pop-sm);transition:transform .16s;text-decoration:none}
 .igcard:hover{transform:translateY(-4px)}
-.igcard .views{position:absolute;top:7px;left:10px;z-index:3;font-family:var(--mono);font-size:.66rem;
+.igcard video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block}
+.igcard .views{position:absolute;top:10px;left:10px;z-index:3;font-family:var(--mono);font-size:.66rem;
   letter-spacing:.12em;background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:.18rem .65rem;
   pointer-events:none}
 .igcard.hot .views{background:var(--gold)}
-/* crop Instagram's chrome — show the video area only */
-.igmedia{position:relative;overflow:hidden;min-height:120px;background:#000}
-.igmedia .instagram-media,.igmedia iframe{position:absolute!important;top:-54px!important;left:0!important;
-  width:100%!important;min-width:0!important;max-width:none!important;
-  margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+.igcard .goig{position:absolute;right:10px;bottom:10px;z-index:3;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.12em;background:rgba(20,17,16,.72);color:var(--paper);border-radius:99px;padding:.2rem .6rem;
+  opacity:0;transition:opacity .18s;pointer-events:none}
+.igcard:hover .goig{opacity:1}
 
 /* reel viewer */
 .reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
@@ -478,7 +476,7 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
 <section id="watch" class="wrap rise">
   <div class="sec-head">
     <h2>Watch the chaos</h2>
-    <p>Straight from Instagram — every play counts on the post. Biggest episodes first.</p>
+    <p>Biggest episodes first. Tap any one to watch it on Instagram — that's where the twins live.</p>
   </div>
   <div class="igrid" id="igrid"></div>
   <div class="btns" style="margin-top:2rem">
@@ -791,24 +789,16 @@ const BIZ_EMAIL = 'hello@furrealtwin.com';
    Sorted 9K+ first, then the rest; views desc inside each bucket.
    To refresh: update views / add new shortcodes, keep the same shape.
 ------------------------------------------------------------------ */
+/* Only the true 9:16 reels — the 16:9 episode uploads are excluded on purpose.
+   Video files live in assets/video/reels/<id>.mp4 (pulled from the account,
+   silent preview loops); clicking a card opens the real reel on Instagram. */
 const REELS = [
-  { id:'DbYTY9zxDGm', views:678000 },
   { id:'DbeJg2_hvGj', views:322000 },
-  { id:'Dbgxp7FxxK6', views:45500  },
-  { id:'DbgSnyqRNsK', views:40200  },
-  { id:'DbiwI5TxPTl', views:39000  },
   { id:'DbbV6Rgxzgi', views:28000  },
-  { id:'DbbDX7cxcuV', views:21700  },
   { id:'DbZKWQRhiry', views:17500  },
   { id:'Dblj8EsxNXZ', views:15300  },
-  { id:'DbcCM25xkPC', views:14400  },
   { id:'DbYr6wUBIfZ', views:9488   },
-  { id:'DbYsva9hi_H', views:9122   },
-  { id:'Dbdaz67xYTH', views:8319   },
-  { id:'DblKBK1RFmZ', views:5691   },
-  { id:'DboLfeqRmJg', views:2823   },
   { id:'DbqBKhGRaeY', views:1547   },
-  { id:'DbqdWNOR_af', views:260    },
   { id:'DbqfFF_RRDT', views:256    },
 ];
 const HOT = 9000;
@@ -823,43 +813,35 @@ const HOT = 9000;
     return b.views - a.views;
   });
   sorted.forEach(r=>{
-    const card = document.createElement('div');
+    const card = document.createElement('a');
     card.className = 'igcard' + (r.views >= HOT ? ' hot' : '');
+    card.href = 'https://www.instagram.com/reel/' + r.id + '/';
+    card.target = '_blank'; card.rel = 'noopener';
+    card.setAttribute('aria-label', 'Watch this episode on Instagram');
     const chip = document.createElement('span');
     chip.className = 'views';
     chip.textContent = '▶ ' + fmt(r.views);
-    const quote = document.createElement('blockquote');
-    quote.className = 'instagram-media';
-    quote.setAttribute('data-instgrm-permalink', 'https://www.instagram.com/reel/' + r.id + '/');
-    quote.setAttribute('data-instgrm-version', '14');
-    const media = document.createElement('div');
-    media.className = 'igmedia';
-    media.appendChild(quote);
-    card.append(chip, media);
+    const v = document.createElement('video');
+    v.src = 'assets/video/reels/' + r.id + '.mp4';
+    v.poster = 'assets/img/reels/' + r.id + '.jpg';
+    v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
+    const go = document.createElement('span');
+    go.className = 'goig';
+    go.textContent = 'Watch on IG ↗';
+    card.append(v, chip, go);
     grid.appendChild(card);
   });
-  const s = document.createElement('script');
-  s.async = true; s.src = 'https://www.instagram.com/embed.js';
-  document.body.appendChild(s);
 
-  /* Crop each card to just the video: embed.js reports the full embed height
-     on the iframe; subtract Instagram's header (54px) and footer (~197px). */
-  const HEAD = 54;
-  let tries = 0;
-  const sizer = setInterval(()=>{
-    let done = 0;
-    document.querySelectorAll('.igmedia iframe').forEach(f=>{
-      const h = parseFloat(f.style.height) || f.getBoundingClientRect().height;
-      if(h > 320){
-        /* taller embeds carry the comment field (~197px of chrome below the
-           video); short landscape ones don't (~151px) */
-        const foot = h > 450 ? 197 : 151;
-        f.closest('.igmedia').style.height = Math.max(120, h - HEAD - foot) + 'px';
-        done++;
-      }
+  /* play only what's on screen — 7 loops at once would cook laptops */
+  const io = new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      const v = e.target.querySelector('video');
+      if(!v) return;
+      if(e.isIntersecting){ v.play().catch(()=>{}); }
+      else { v.pause(); }
     });
-    if(done >= REELS.length || ++tries > 25) clearInterval(sizer);
-  }, 600);
+  },{threshold:.35});
+  document.querySelectorAll('.igcard').forEach(c=>io.observe(c));
 })();
 
 /* ---------------------------------------------------------------
