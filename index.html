@@ -196,7 +196,7 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .ig-note{margin-top:1.6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft);opacity:.75}
 
 /* instagram grid */
-.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:min(880px,100%);margin-inline:auto}
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:min(880px,100%);margin-inline:auto;align-items:start}
 @media(max-width:720px){.igrid{grid-template-columns:repeat(2,1fr);gap:.8rem}}
 @media(max-width:460px){.igrid{grid-template-columns:1fr;width:min(320px,100%)}}
 .igcard{position:relative;border:var(--edge);border-radius:16px;overflow:hidden;background:#fff;
@@ -208,9 +208,11 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
   letter-spacing:.12em;background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:.18rem .65rem;
   pointer-events:none}
 .igcard.hot .views{background:var(--gold)}
-.igcard .instagram-media{width:100%!important;min-width:0!important;max-width:none!important;
-  margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:static!important;
-  min-height:320px}
+/* crop Instagram's chrome — show the video area only */
+.igmedia{position:relative;overflow:hidden;min-height:120px;background:#000}
+.igmedia .instagram-media,.igmedia iframe{position:absolute!important;top:-54px!important;left:0!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 
 /* reel viewer */
 .reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
@@ -830,12 +832,34 @@ const HOT = 9000;
     quote.className = 'instagram-media';
     quote.setAttribute('data-instgrm-permalink', 'https://www.instagram.com/reel/' + r.id + '/');
     quote.setAttribute('data-instgrm-version', '14');
-    card.append(chip, quote);
+    const media = document.createElement('div');
+    media.className = 'igmedia';
+    media.appendChild(quote);
+    card.append(chip, media);
     grid.appendChild(card);
   });
   const s = document.createElement('script');
   s.async = true; s.src = 'https://www.instagram.com/embed.js';
   document.body.appendChild(s);
+
+  /* Crop each card to just the video: embed.js reports the full embed height
+     on the iframe; subtract Instagram's header (54px) and footer (~197px). */
+  const HEAD = 54;
+  let tries = 0;
+  const sizer = setInterval(()=>{
+    let done = 0;
+    document.querySelectorAll('.igmedia iframe').forEach(f=>{
+      const h = parseFloat(f.style.height) || f.getBoundingClientRect().height;
+      if(h > 320){
+        /* taller embeds carry the comment field (~197px of chrome below the
+           video); short landscape ones don't (~151px) */
+        const foot = h > 450 ? 197 : 151;
+        f.closest('.igmedia').style.height = Math.max(120, h - HEAD - foot) + 'px';
+        done++;
+      }
+    });
+    if(done >= REELS.length || ++tries > 25) clearInterval(sizer);
+  }, 600);
 })();
 
 /* ---------------------------------------------------------------
