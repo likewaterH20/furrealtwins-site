@@ -621,7 +621,7 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
       <a href="https://www.instagram.com/furrealtwin" target="_blank" rel="noopener">Instagram ↗</a>
       <a href="https://www.youtube.com/@furrealtwin" target="_blank" rel="noopener">YouTube ↗</a>
     </div>
-    <p class="fine">@furrealtwin everywhere · wholesale &amp; collabs: hello@furrealtwin.com</p>
+    <p class="fine">@furrealtwin everywhere · wholesale &amp; collabs: <a data-biz href="#">Admiralakbarreyfurtwin@gmail.com</a></p>
   </div>
 </section>
 
@@ -680,7 +680,9 @@ const CLAIMED = 0;
    page once it exists and every amount button below repoints itself. */
 const SUPPORT_URL = 'https://ko-fi.com/furrealtwin';
 /* Business inbox for sponsors/collabs. Swap for the real address when it exists. */
-const BIZ_EMAIL = 'hello@furrealtwin.com';
+const BIZ_EMAIL = 'Admiralakbarreyfurtwin@gmail.com';
+/* every brand enquiry copies Rafael too, so nothing sits unseen in one inbox */
+const BIZ_CC    = 'supergoodwav@gmail.com';
 
 (function mountUnlocks(){
   const fmt = n => n.toLocaleString('en-US');
@@ -783,10 +785,17 @@ const BIZ_EMAIL = 'hello@furrealtwin.com';
   const bm = document.getElementById('brandsMail');
   if(bm){
     bm.href = 'mailto:' + BIZ_EMAIL
-      + '?subject=' + encodeURIComponent('Brand inquiry — FURREAL TWINS')
+      + '?cc=' + encodeURIComponent(BIZ_CC)
+      + '&subject=' + encodeURIComponent('Brand inquiry — FURREAL TWINS')
       + '&body=' + encodeURIComponent(
         'Brand:\nWhat you make:\nWhich way in (placement / collab / custom episode):\nTimeline:\nBudget range:\n');
   }
+
+  /* any plain contact link picks up the same pair */
+  document.querySelectorAll('a[data-biz]').forEach(a=>{
+    a.href = 'mailto:' + BIZ_EMAIL + '?cc=' + encodeURIComponent(BIZ_CC);
+    a.textContent = BIZ_EMAIL;
+  });
 
   /* tip buttons all resolve from SUPPORT_URL */
   document.querySelectorAll('a[data-tip]').forEach(a=>{
