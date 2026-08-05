@@ -196,7 +196,9 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .ig-note{margin-top:1.6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft);opacity:.75}
 
 /* instagram grid */
-.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.1rem}
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:min(880px,100%);margin-inline:auto}
+@media(max-width:720px){.igrid{grid-template-columns:repeat(2,1fr);gap:.8rem}}
+@media(max-width:460px){.igrid{grid-template-columns:1fr;width:min(320px,100%)}}
 .igcard{position:relative;border:var(--edge);border-radius:16px;overflow:hidden;background:#fff;
   box-shadow:var(--pop-sm);transition:transform .16s;padding-top:40px}
 .igcard::before{content:"";position:absolute;top:0;left:0;right:0;height:40px;background:var(--paper-2);
@@ -208,7 +210,7 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .igcard.hot .views{background:var(--gold)}
 .igcard .instagram-media{width:100%!important;min-width:0!important;max-width:none!important;
   margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:static!important;
-  min-height:440px}
+  min-height:320px}
 
 /* reel viewer */
 .reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
