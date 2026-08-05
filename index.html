@@ -180,6 +180,36 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
   min-width:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 .ig-note{margin-top:1.6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft);opacity:.75}
 
+/* reel viewer */
+.reel{position:fixed;inset:0;z-index:200;background:rgba(12,10,9,.94);display:none;
+  align-items:center;justify-content:center;gap:clamp(.6rem,2vw,2rem);padding:clamp(.6rem,2vw,2rem)}
+.reel.open{display:flex}
+.reel-stage{position:relative;height:min(86vh,900px);aspect-ratio:9/16;max-width:94vw;
+  border:var(--edge);border-radius:22px;overflow:hidden;background:#000;box-shadow:var(--pop)}
+.reel-stage video{width:100%;height:100%;object-fit:cover;display:block}
+.reel-cap{position:absolute;left:0;right:0;bottom:0;padding:2.6rem 1.1rem 1rem;color:var(--paper);
+  background:linear-gradient(transparent,rgba(12,10,9,.85));pointer-events:none}
+.reel-cap b{display:block;font-family:var(--display);font-weight:900;font-size:1.3rem;line-height:1.05}
+.reel-cap span{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+.reel-nav{width:clamp(44px,5vw,58px);height:clamp(44px,5vw,58px);flex:0 0 auto;border-radius:50%;
+  border:3px solid var(--paper);background:transparent;color:var(--paper);font-size:1.3rem;cursor:pointer;
+  display:grid;place-items:center;transition:background .15s,color .15s}
+.reel-nav:hover{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.reel-close{position:absolute;top:clamp(.6rem,2vw,1.4rem);right:clamp(.6rem,2vw,1.4rem);
+  width:46px;height:46px;border-radius:50%;border:3px solid var(--paper);background:transparent;
+  color:var(--paper);font-size:1.2rem;cursor:pointer;z-index:2}
+.reel-close:hover{background:var(--paper);color:var(--ink)}
+.reel-dots{position:absolute;left:50%;bottom:clamp(.5rem,1.6vw,1.2rem);translate:-50% 0;display:flex;gap:.45rem}
+.reel-dots i{width:8px;height:8px;border-radius:50%;background:rgba(243,231,211,.35)}
+.reel-dots i.on{background:var(--gold);width:22px;border-radius:99px}
+@media(max-width:700px){.reel-nav{position:absolute;bottom:1.2rem;z-index:2}
+  .reel-nav.prev{left:1.2rem}.reel-nav.next{right:1.2rem}}
+.phone{cursor:pointer}
+.playhint{position:absolute;inset:0;z-index:1;display:grid;place-items:center;pointer-events:none}
+.playhint span{width:62px;height:62px;border-radius:50%;background:rgba(243,231,211,.9);border:3px solid var(--ink);
+  display:grid;place-items:center;font-size:1.2rem;color:var(--ink);padding-left:4px;transition:transform .18s}
+.phone:hover .playhint span{transform:scale(1.1)}
+
 /* cats */
 .cats{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem}
 @media(max-width:820px){.cats{grid-template-columns:1fr}}
@@ -517,6 +547,17 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
 
 </main>
 
+<div class="reel" id="reel" role="dialog" aria-modal="true" aria-label="Episode player">
+  <button class="reel-close" id="reelClose" aria-label="Close">✕</button>
+  <button class="reel-nav prev" id="reelPrev" aria-label="Previous episode">‹</button>
+  <div class="reel-stage">
+    <video id="reelVideo" playsinline loop controls></video>
+    <div class="reel-cap"><span id="reelNum"></span><b id="reelTitle"></b></div>
+  </div>
+  <button class="reel-nav next" id="reelNext" aria-label="Next episode">›</button>
+  <div class="reel-dots" id="reelDots"></div>
+</div>
+
 <footer>
   <div class="wrap foot-in">
     <span>© <span id="yr"></span> FURREALTWIN · a FURREAL BRAND property</span>
@@ -700,15 +741,72 @@ const IG_REELS = [
   if(note) note.remove();
 })();
 
-/* one episode at a time; playing unmutes */
-const vids = [...document.querySelectorAll('.phone video')];
-vids.forEach(v=>{
-  v.addEventListener('play', ()=>{
-    vids.forEach(o=>{ if(o!==v){ o.pause(); o.muted = true; } });
-    v.muted = false;
+/* ---------------------------------------------------------------
+   REEL VIEWER — click any episode to watch it full 9:16 with sound,
+   arrow through the rest without leaving the player.
+------------------------------------------------------------------ */
+(function reelViewer(){
+  const eps = [...document.querySelectorAll('#eps .ep')].map(ep=>({
+    src:   ep.querySelector('video') ? ep.querySelector('video').getAttribute('src') : null,
+    poster:ep.querySelector('video') ? ep.querySelector('video').getAttribute('poster') : '',
+    num:   ep.querySelector('.num').textContent,
+    title: ep.querySelector('.ep-meta h3').textContent
+  })).filter(e=>e.src);
+  if(!eps.length) return;   /* Instagram embeds are mounted — they play in place */
+
+  const box   = document.getElementById('reel');
+  const video = document.getElementById('reelVideo');
+  const dots  = document.getElementById('reelDots');
+  let i = 0;
+
+  eps.forEach(()=>dots.appendChild(document.createElement('i')));
+
+  function show(n){
+    i = (n + eps.length) % eps.length;
+    const e = eps[i];
+    video.src = e.src;
+    video.poster = e.poster;
+    document.getElementById('reelNum').textContent = e.num;
+    document.getElementById('reelTitle').textContent = e.title;
+    [...dots.children].forEach((d,x)=>d.classList.toggle('on', x===i));
+    video.muted = false;
+    video.play().catch(()=>{ video.muted = true; video.play().catch(()=>{}); });
+  }
+  function open(n){
+    document.querySelectorAll('#eps video').forEach(v=>v.pause());
+    box.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    show(n);
+  }
+  function close(){
+    box.classList.remove('open');
+    document.body.style.overflow = '';
+    video.pause(); video.removeAttribute('src'); video.load();
+  }
+
+  document.querySelectorAll('#eps .ep').forEach((ep,n)=>{
+    const phone = ep.querySelector('.phone');
+    if(!phone || !ep.querySelector('video')) return;
+    const hint = document.createElement('div');
+    hint.className = 'playhint';
+    const dot = document.createElement('span');
+    dot.textContent = '▶';
+    hint.appendChild(dot);
+    phone.appendChild(hint);
+    phone.addEventListener('click', ()=>open(n));
   });
-  v.addEventListener('click', ()=>{ if(v.paused){ v.play(); } });
-});
+
+  document.getElementById('reelPrev').addEventListener('click', ()=>show(i-1));
+  document.getElementById('reelNext').addEventListener('click', ()=>show(i+1));
+  document.getElementById('reelClose').addEventListener('click', close);
+  box.addEventListener('click', e=>{ if(e.target === box) close(); });
+  document.addEventListener('keydown', e=>{
+    if(!box.classList.contains('open')) return;
+    if(e.key === 'Escape') close();
+    if(e.key === 'ArrowRight') show(i+1);
+    if(e.key === 'ArrowLeft')  show(i-1);
+  });
+})();
 
 /* waitlist — front-end only until an email provider is connected */
 const form = document.getElementById('waitlist');
