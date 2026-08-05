@@ -49,8 +49,9 @@ nav{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);bo
 
 /* napping band */
 .nap{position:relative;border-bottom:var(--edge);background:#e8dcc6;overflow:hidden;line-height:0}
-.nap video{width:100%;height:auto;aspect-ratio:7/3;object-fit:cover;object-position:center;display:block;background:#e8dcc6}
-@media(max-width:600px){.nap video{aspect-ratio:16/8}}
+.nap video{width:100%;height:auto;aspect-ratio:175/41;object-fit:cover;object-position:center;display:block;background:#e8dcc6}
+@media(max-width:900px){.nap video{aspect-ratio:16/5}}
+@media(max-width:600px){.nap video{aspect-ratio:16/7}}
 .nap-badge{position:absolute;z-index:2;left:clamp(10px,3.4vw,58px);top:50%;translate:0 -50%;
   width:clamp(72px,17vw,232px);height:auto;border-radius:50%;filter:drop-shadow(4px 5px 0 rgba(20,17,16,.28))}
 .nap-tag{position:absolute;left:50%;bottom:10px;translate:-50% 0;font-family:var(--mono);font-size:.62rem;
