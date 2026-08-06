@@ -71,6 +71,19 @@ nav{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);bo
   letter-spacing:.28em;text-transform:uppercase;color:var(--ink);opacity:.42}
 @media(prefers-reduced-motion:reduce){.nap *{animation:none!important}}
 
+/* live-ish numbers sitting in the empty wall space of the banner */
+/* wall-toned fade so the numbers stay readable over the couch on small screens */
+.nap::after{content:"";position:absolute;left:0;top:0;bottom:0;width:min(52%,460px);z-index:1;
+  background:linear-gradient(90deg,rgba(238,228,209,.88),rgba(238,228,209,.55) 45%,rgba(238,228,209,0));
+  pointer-events:none}
+.nap-stats{position:absolute;z-index:2;left:clamp(14px,4vw,64px);top:50%;translate:0 -50%;
+  display:flex;flex-direction:column;gap:clamp(.35rem,1vw,.8rem);line-height:1;pointer-events:none}
+.nap-stats .stat b{display:block;font-family:var(--display);font-weight:900;letter-spacing:-.03em;
+  font-size:clamp(1.15rem,3.4vw,2.5rem);color:var(--ink);font-variation-settings:"SOFT" 60,"WONK" 1}
+.nap-stats .stat span{display:block;margin-top:.3em;font-family:var(--mono);
+  font-size:clamp(.44rem,.76vw,.62rem);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);opacity:.72}
+@media(max-width:600px){.nap-stats .stat:last-child{display:none}}
+
 /* hero */
 .hero{position:relative;padding:clamp(2.2rem,5vw,4rem) 0 0;overflow:hidden}
 .hero::after{content:"";position:absolute;left:50%;top:-28vw;translate:-50% 0;width:120vw;height:120vw;border-radius:50%;
@@ -409,6 +422,10 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
   <video src="assets/video/nap-banner.mp4" poster="assets/img/nap-poster.jpg"
          autoplay muted loop playsinline preload="metadata"
          aria-label="Admiral and Rey napping on the couch in the living room"></video>
+  <div class="nap-stats">
+    <div class="stat"><b id="statViews">—</b><span>views and counting</span></div>
+    <div class="stat"><b id="statFollowers">—</b><span>followers</span></div>
+  </div>
 </div>
 
 <header class="hero" id="top">
@@ -874,6 +891,41 @@ const WIDE = [
   { id:'DblKBK1RFmZ', views:5691,   title:'Snack Negotiations' },
   { id:'DboLfeqRmJg', views:2823,   title:'Afternoon Patrol' },
 ];
+
+/* Banner stats — totals derived from the real reel data, then counted up once
+   on load so the number feels alive without pretending to be live. */
+(function bannerStats(){
+  const vEl = document.getElementById('statViews');
+  const fEl = document.getElementById('statFollowers');
+  if(!vEl || !fEl) return;
+
+  const totalViews = [...REELS, ...WIDE].reduce((n, r) => n + r.views, 0);
+
+  const short = n => n >= 1000000 ? (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M'
+               : n >= 1000 ? Math.round(n/1000) + 'K' : '' + n;
+  const comma = n => n.toLocaleString('en-US');
+
+  function countUp(el, target, render){
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+      el.textContent = render(target); return;
+    }
+    const start = performance.now(), dur = 1400;
+    (function step(now){
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);          /* ease-out, lands softly */
+      el.textContent = render(Math.round(target * eased));
+      if(p < 1) requestAnimationFrame(step);
+    })(start);
+  }
+
+  /* only run it once the banner is actually looked at */
+  new IntersectionObserver((es, obs) => {
+    if(!es[0].isIntersecting) return;
+    countUp(vEl, totalViews, short);
+    countUp(fEl, FOLLOWERS, comma);
+    obs.disconnect();
+  },{threshold:.2}).observe(vEl);
+})();
 
 (function featurePlayer(){
   const v = document.getElementById('featVideo');
