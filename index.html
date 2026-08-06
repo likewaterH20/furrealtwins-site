@@ -208,10 +208,16 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .prod h3{font-size:clamp(.56rem,8.4cqw,1.5rem);line-height:1.03;letter-spacing:-.02em}
 .prod .price{font-size:clamp(.42rem,4.3cqw,.82rem)}
 .prod p{font-size:clamp(.4rem,4.1cqw,.93rem);line-height:1.3}
-.prod .specs{gap:clamp(.15rem,1.2cqw,.4rem);margin-top:clamp(.1rem,1cqw,.3rem)}
-.prod .specs li{font-size:clamp(.36rem,3.1cqw,.66rem);
+/* spec pills — flex row, no bullets (this base rule got lost once; keep it) */
+.prod .specs{list-style:none;padding:0;display:flex;flex-wrap:wrap;
+  font-family:var(--mono);text-transform:uppercase;color:var(--ink-soft);
+  gap:clamp(.15rem,1.2cqw,.4rem);margin:clamp(.1rem,1cqw,.3rem) 0 0}
+.prod .specs li{border:solid var(--ink);border-radius:99px;
+  font-size:clamp(.36rem,3.1cqw,.66rem);
   padding:clamp(.08rem,.8cqw,.18rem) clamp(.24rem,2.2cqw,.6rem);
   border-width:clamp(1.5px,.5cqw,2px);letter-spacing:.04em}
+/* two pills is plenty — the rest is detail for the product page */
+.prod .specs li:nth-child(n+3){display:none}
 .prod .btn{padding:clamp(.38rem,3.2cqw,.85rem) clamp(.4rem,3cqw,1.5rem);
   font-size:clamp(.46rem,4cqw,.92rem);border-width:clamp(2px,.8cqw,3px)}
 .prod .lockbadge{top:clamp(5px,3cqw,12px);right:clamp(5px,3cqw,12px);
@@ -226,17 +232,19 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
   font-size:clamp(.38rem,3cqw,.6rem);letter-spacing:.05em;border-width:clamp(1.5px,.5cqw,2px)}
 .prod .unlock .row{font-size:clamp(.4rem,3.1cqw,.66rem);letter-spacing:.05em}
 .prod .unlock .track{height:clamp(5px,1.6cqw,8px)}
-/* on a narrow card the chips stack one per line, so show only the best two */
-@container (max-width:220px){
-  .prod .specs li:nth-child(n+3){display:none}
+/* very narrow cards drop the pills entirely — title, price, blurb, CTA is enough */
+@container (max-width:190px){
+  .prod .specs{display:none}
 }
 /* blurb is clipped with a "see more" toggle rather than truncated for good */
 .prod p.blurb{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .prod p.blurb.open{-webkit-line-clamp:unset;display:block}
-.seemore{align-self:flex-start;background:none;border:0;padding:0;cursor:pointer;color:var(--tortie);
-  font-family:var(--mono);font-size:clamp(.38rem,3cqw,.66rem);letter-spacing:.1em;text-transform:uppercase;
-  text-decoration:underline;text-underline-offset:2px}
-.seemore:hover{color:var(--ink)}
+/* quiet inline toggle, not a heading-sized link */
+.seemore{align-self:flex-start;background:none;border:0;padding:0;margin-top:-.15em;cursor:pointer;
+  color:var(--ink-soft);font-family:var(--body);font-weight:800;
+  font-size:clamp(.38rem,3.4cqw,.8rem);letter-spacing:0;text-transform:none;
+  text-decoration:underline;text-underline-offset:2px;opacity:.6}
+.seemore:hover{color:var(--tortie);opacity:1}
 @media(max-width:760px){
   .shop{gap:.45rem}
   .prod{border-width:2px;border-radius:10px;box-shadow:3px 3px 0 var(--ink)}
@@ -1018,11 +1026,11 @@ const WIDE = [
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'seemore';
-    btn.textContent = 'See more';
+    btn.textContent = 'more';
     btn.setAttribute('aria-expanded', 'false');
     btn.addEventListener('click', ()=>{
       const open = p.classList.toggle('open');
-      btn.textContent = open ? 'See less' : 'See more';
+      btn.textContent = open ? 'less' : 'more';
       btn.setAttribute('aria-expanded', String(open));
     });
     p.insertAdjacentElement('afterend', btn);
