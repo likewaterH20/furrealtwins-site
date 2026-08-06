@@ -161,9 +161,11 @@ section{padding:clamp(3.2rem,7vw,5.5rem) 0}
 .shots img.on{opacity:1}
 .shot-dots{position:absolute;z-index:2;left:50%;bottom:clamp(5px,3cqw,12px);translate:-50% 0;
   display:flex;gap:clamp(2px,.9cqw,5px)}
-.shot-dots i{width:clamp(3px,1.1cqw,6px);height:clamp(3px,1.1cqw,6px);border-radius:50%;
-  background:rgba(243,231,211,.55);box-shadow:0 0 0 1px rgba(20,17,16,.35);transition:background .3s}
-.shot-dots i.on{background:var(--gold)}
+.shot-dots button{width:clamp(5px,1.6cqw,9px);height:clamp(5px,1.6cqw,9px);border-radius:50%;padding:0;
+  border:0;cursor:pointer;background:rgba(243,231,211,.55);box-shadow:0 0 0 1px rgba(20,17,16,.35);
+  transition:background .3s,transform .15s}
+.shot-dots button.on{background:var(--gold)}
+.shot-dots button:hover{transform:scale(1.25)}
 @media(prefers-reduced-motion:reduce){.shots img{transition:none}}
 .prod.locked .art img{filter:grayscale(.9) contrast(.92) brightness(1.04);transition:filter .45s ease}
 .prod.locked .art::after{content:"";position:absolute;inset:0;background:rgba(20,17,16,.14);
@@ -965,16 +967,15 @@ const WIDE = [
 ];
 
 /* ---------------------------------------------------------------
-   PRODUCT SHOTS — each card holds 3 angles that cross-fade every 4s.
-   They stay in step with each other and pause when off screen.
+   PRODUCT SHOTS — two angles per card. No auto-rotation: the shopper taps
+   the image (or a dot) to switch. Each card is independent.
 ------------------------------------------------------------------ */
 (function productShots(){
-  const SHOTS = 2, EVERY = 10000;
-  const stacks = [...document.querySelectorAll('.shots')];
-  if(!stacks.length) return;
+  const SHOTS = 2;
 
-  stacks.forEach(stack=>{
+  document.querySelectorAll('.shots').forEach(stack=>{
     const base = stack.dataset.shots, alt = stack.dataset.alt || '';
+    const imgs = [];
     for(let n = 1; n <= SHOTS; n++){
       const img = document.createElement('img');
       img.src = 'assets/img/' + base + '-' + n + '.jpg';
@@ -982,15 +983,33 @@ const WIDE = [
       if(n > 1) img.loading = 'lazy';
       if(n === 1) img.classList.add('on');
       stack.appendChild(img);
+      imgs.push(img);
     }
+
     const dots = document.createElement('div');
     dots.className = 'shot-dots';
+    const pips = [];
     for(let n = 0; n < SHOTS; n++){
-      const d = document.createElement('i');
+      const d = document.createElement('button');
+      d.type = 'button';
+      d.setAttribute('aria-label', 'View photo ' + (n + 1));
       if(!n) d.classList.add('on');
+      d.addEventListener('click', e => { e.stopPropagation(); show(n); });
       dots.appendChild(d);
+      pips.push(d);
     }
     stack.parentElement.appendChild(dots);
+
+    let i = 0;
+    function show(n){
+      i = (n + SHOTS) % SHOTS;
+      imgs.forEach((img, x) => img.classList.toggle('on', x === i));
+      pips.forEach((d,  x) => d.classList.toggle('on', x === i));
+    }
+
+    /* tap the photo itself to go to the next angle */
+    stack.addEventListener('click', () => show(i + 1));
+    stack.style.cursor = 'pointer';
   });
 
   /* clip each blurb and give it a see more / less toggle */
@@ -1012,23 +1031,6 @@ const WIDE = [
       if(p.scrollHeight <= p.clientHeight + 2) btn.remove();
     });
   });
-
-  let i = 0, timer = null;
-  function advance(){
-    i = (i + 1) % SHOTS;
-    stacks.forEach(s => [...s.children].forEach((img,n)=>img.classList.toggle('on', n===i)));
-    document.querySelectorAll('.shot-dots').forEach(d =>
-      [...d.children].forEach((dot,n)=>dot.classList.toggle('on', n===i)));
-  }
-  const start = ()=>{ if(!timer) timer = setInterval(advance, EVERY); };
-  const stop  = ()=>{ clearInterval(timer); timer = null; };
-
-  /* only cycle while the shop is actually on screen */
-  const shop = document.getElementById('shop');
-  if(shop){
-    new IntersectionObserver(es => es[0].isIntersecting ? start() : stop(), {threshold:.05}).observe(shop);
-  } else { start(); }
-  document.addEventListener('visibilitychange', ()=> document.hidden ? stop() : start());
 })();
 
 /* Banner stats — totals derived from the real reel data, then counted up once
