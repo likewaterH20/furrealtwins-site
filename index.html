@@ -158,10 +158,12 @@ h1.title .l1 span{display:inline-block;animation:drop .8s cubic-bezier(.2,1.2,.3
 h1.title .o{color:var(--tortie)}
 /* badge sits on the TWIN line, tight against the T, part of the lockup */
 .hero-lock{position:relative;display:inline-block;font-size:clamp(2.7rem,11.4vw,8.2rem)}
-.title-badge{position:absolute;z-index:3;left:-.02em;top:.83em;width:1em;border-radius:50%;
-  filter:drop-shadow(3px 4px 0 rgba(20,17,16,.22));animation:bob 6s ease-in-out infinite;pointer-events:none}
-h1.title .l2 .gap{display:inline-block;width:.94em}   /* the seat the badge occupies */
-h1.title .l2{display:block;color:var(--ink);margin-top:-.09em;
+/* the badge now rides at the END of the TWIN line instead of sitting in a
+   reserved seat at the start, so TWIN starts flush under the F of FUR */
+.title-badge{width:.86em;height:.86em;flex:0 0 auto;border-radius:50%;
+  filter:drop-shadow(3px 4px 0 rgba(20,17,16,.22));animation:bob 6s ease-in-out infinite;
+  pointer-events:none}
+h1.title .l2{display:flex;align-items:center;gap:.14em;color:var(--ink);margin-top:-.09em;
   animation:fadeup .9s .45s cubic-bezier(.2,.8,.3,1) backwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(.6em)}}
 @keyframes drop{from{opacity:0;transform:translateY(-.5em) rotate(-8deg)}}
@@ -601,10 +603,9 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <div class="hero-lock">
-      <img class="title-badge" src="assets/img/badge.png" alt="" aria-hidden="true">
       <h1 class="title" aria-label="FurReal Twin">
         <span class="l1" aria-hidden="true"><span style="animation-delay:.02s">F</span><span style="animation-delay:.06s">U</span><span style="animation-delay:.1s">R</span><span class="o" style="animation-delay:.14s">R</span><span class="o" style="animation-delay:.18s">E</span><span class="o" style="animation-delay:.22s">A</span><span class="o" style="animation-delay:.26s">L</span></span>
-        <span class="l2" aria-hidden="true"><span class="gap"></span>TWIN</span>
+        <span class="l2" aria-hidden="true">TWIN<img class="title-badge" src="assets/img/badge.png" alt="" aria-hidden="true"></span>
       </h1>
       </div>
       <p class="tag">Two personalities. Twice the chaos. Endless love.</p>
