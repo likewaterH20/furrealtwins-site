@@ -53,10 +53,36 @@ h1,h2,h3{font-family:var(--display);font-weight:900;line-height:.94;letter-spaci
 nav{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);border-bottom:var(--edge)}
 .nav-in{display:flex;align-items:center;gap:clamp(.7rem,1.1vw,1.2rem);height:58px}
 .nav-in a{white-space:nowrap}
-.nav-mark{font-family:var(--display);font-weight:900;font-size:1.05rem;display:flex;align-items:center;gap:.6rem;text-decoration:none;flex:0 0 auto;margin-right:auto}
+.nav-mark{font-family:var(--display);font-weight:900;font-size:1.05rem;display:flex;align-items:center;gap:.6rem;text-decoration:none;flex:0 0 auto}
 .nav-mark img{width:30px;height:30px;border-radius:50%;border:2px solid var(--paper)}
-/* the numbers live on the banner now (.nap-stats), so .nav-mark carries the
-   margin-right:auto that used to sit on .nav-stats and push the links right */
+/* The full stat block lives on the banner (.nap-stats). This is the compact
+   sticky version: it fades in only after the banner has scrolled away, so the
+   numbers are never on screen twice. It keeps its layout box while hidden —
+   margin-right:auto lives here and is what pushes the nav links right, so
+   display:none would collapse the whole nav. */
+/* collapses to zero width when hidden rather than just going transparent —
+   visibility:hidden still reserves its box and overflowed the nav by 300px+
+   on narrow screens. max-width is what animates. */
+.nav-stats{display:flex;align-items:center;gap:clamp(.5rem,1.4vw,1.1rem);
+  max-width:0;opacity:0;overflow:hidden;padding-left:0;
+  border-left:0 solid rgba(243,231,211,.22);
+  transition:max-width .3s ease,opacity .24s ease,padding-left .3s ease}
+.nav-stats.show{max-width:22rem;opacity:1;
+  padding-left:clamp(.6rem,1.6vw,1.3rem);border-left-width:1px}
+/* the auto margin lives on the link after the stats, so the links stay right
+   whether the stats are collapsed or open */
+#navStats + a{margin-left:auto}
+.nav-stats .stat{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--paper);opacity:.62;white-space:nowrap}
+.nav-stats .stat b{font-family:var(--display);font-weight:900;font-size:.92rem;
+  letter-spacing:-.02em;color:var(--gold);opacity:1;margin-right:.15em}
+@media(prefers-reduced-motion:reduce){.nav-stats{transition:none}}
+/* phones: keep the numbers, drop the words, so the CTA never gets clipped */
+@media(max-width:760px){
+  .nav-stats{padding-left:.5rem;gap:.4rem}
+  .nav-stats .stat{font-size:0;letter-spacing:0}
+  .nav-stats .stat b{font-size:.72rem;margin:0}
+}
 @media(max-width:760px){
   .nav-in a.cta{padding:.35rem .6rem;font-size:.6rem;letter-spacing:.1em}
 }
@@ -64,8 +90,19 @@ nav{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);bo
 .nav-in a:hover{opacity:1;color:var(--gold)}
 .nav-in a.cta{background:var(--gold);color:var(--ink);opacity:1;padding:.4rem .95rem;border-radius:99px;font-weight:500}
 .nav-in a.cta:hover{background:var(--paper)}
-.nav-in a.cta{white-space:nowrap}
-@media(max-width:760px){.nav-hide{display:none}}
+.nav-in a.cta{white-space:nowrap;display:inline-flex;align-items:center;gap:.42em}
+.nav-in a.cta svg{width:1.05em;height:1.05em;flex:0 0 auto;
+  fill:none;stroke:currentColor;stroke-width:1.9}
+/* below 460 the word goes and the glyph carries it, so the bar never crowds */
+@media(max-width:460px){
+  .nav-in a.cta span{display:none}
+  .nav-in a.cta{padding:.42rem .58rem}
+  .nav-in a.cta svg{width:1.25em;height:1.25em}
+}
+/* 960, not 760: six links + the CTA genuinely stop fitting around 900px, so
+   the old 760 breakpoint let the nav overflow by ~80px in that band (present
+   before the stats were added). Shop / Support / CTA are what survive. */
+@media(max-width:960px){.nav-hide{display:none}}
 @media(max-width:560px){.nav-in{gap:1rem}.nav-mark span{display:none}.nav-in a{font-size:.68rem;letter-spacing:.12em}}
 
 /* napping band */
@@ -521,13 +558,29 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
 <nav>
   <div class="wrap nav-in">
     <a class="nav-mark" href="#top"><img src="assets/img/badge.png" alt=""><span>FURREALTWINS</span></a>
+    <!-- appears only once the banner has scrolled away. Views + followers
+         only; "days old" stays a banner-exclusive. Own IDs, because the
+         banner already owns statViews/statFollowers and getElementById
+         would bind to whichever came first. -->
+    <div class="nav-stats" id="navStats">
+      <span class="stat"><b id="navViews">0</b> views</span>
+      <span class="stat"><b id="navFollowers">0</b> followers</span>
+    </div>
+    <!-- deliberately short. The Twins / Our Story are still on the page, just
+         not in the bar: the nav is for the four things worth a click. -->
     <a href="#shop">Shop</a>
     <a href="#watch" class="nav-hide">Watch</a>
     <a href="#brands" class="nav-hide">For Brands</a>
-    <a href="#twins" class="nav-hide">The Twins</a>
-    <a href="#story" class="nav-hide">Our Story</a>
     <a href="#fund">Support</a>
-    <a href="#list" class="cta">Get first dibs</a>
+    <!-- href is filled in from IG_HANDLE by the data-follow handler -->
+    <a class="cta" data-follow href="#" target="_blank" rel="noopener" aria-label="Follow FurReal Twins on Instagram">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/>
+        <circle cx="12" cy="12" r="4.6"/>
+        <circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Follow</span>
+    </a>
   </div>
 </nav>
 
@@ -732,8 +785,8 @@ footer{background:var(--ink);color:var(--paper);padding:2rem 0 2.8rem;border-top
     </div>
 
     <aside class="tellers">
-      <span class="eyebrow">The storytellers</span>
-      <h3>Amalia &amp; Rafael</h3>
+      <span class="eyebrow">Behind the show</span>
+      <h3>The Creators</h3>
       <p>A couple who live with the cast. We write it, draw it, cut it and post it, pulling from real life, one small domestic disaster at a time.</p>
       <ul class="facts">
         <li><b>Viral</b><span>First post, first day</span></li>
@@ -1103,6 +1156,26 @@ const WIDE = [
     if(aEl) countUp(aEl, days, n => String(n).padStart(2, '0'));   /* 07, not 7 */
     obs.disconnect();
   },{threshold:.2}).observe(vEl);
+
+  /* the sticky nav copy: same two numbers, no animation (it appears mid-scroll,
+     so counting up there would just look like a glitch), shown only once the
+     banner is off screen so the figures are never visible in two places. */
+  const navStats = document.getElementById('navStats');
+  const nv = document.getElementById('navViews');
+  const nf = document.getElementById('navFollowers');
+  if(navStats && nv && nf){
+    nv.textContent = short(totalViews);
+    nf.textContent = comma(FOLLOWERS);
+
+    const banner = document.querySelector('.nap');
+    if(banner){
+      /* rootMargin offsets the sticky nav's own height so the swap happens as
+         the banner slides under it, not after it has already gone */
+      new IntersectionObserver(es => {
+        navStats.classList.toggle('show', !es[0].isIntersecting);
+      },{rootMargin:'-58px 0px 0px 0px', threshold:0}).observe(banner);
+    }
+  }
 })();
 
 (function featurePlayer(){
