@@ -90,16 +90,19 @@ nav{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);bo
 .nap-stats{position:absolute;z-index:2;top:50%;left:50%;translate:-50% -50%;
   width:min(1180px,92vw);
   display:flex;flex-direction:column;align-items:flex-start;
-  gap:clamp(.3rem,1vw,.85rem);pointer-events:none}
+  gap:clamp(.5rem,1.5vw,1.15rem);pointer-events:none}
 /* site fonts: heavy Fraunces numeral + DM Mono label, on one line each.
    Full-strength ink on the numbers — the wall is light, so nothing is
    ghosted back; legibility first. */
-/* each stat is two lines: small mono label on top, big numeral underneath */
+/* each stat is two lines: small mono label on top, big numeral underneath.
+   Fraunces has tall ascenders that overflow a tight line box, so at
+   line-height 1.1 the label visually sat on the numeral's caps even though
+   the boxes technically cleared by ~1px. Needs real breathing room. */
 .nap-stats .nstat{display:flex;flex-direction:column;align-items:flex-start;
-  line-height:1.1;white-space:nowrap}
+  line-height:1.22;white-space:nowrap}
 .nap-stats .nstat span{font-family:var(--mono);font-size:clamp(.5rem,.98vw,.76rem);
   letter-spacing:.26em;text-transform:uppercase;color:var(--ink);opacity:.78;
-  margin-bottom:.15em}
+  margin-bottom:.5em}
 .nap-stats .nstat b{font-family:var(--display);font-weight:900;
   font-size:clamp(1.15rem,3.4vw,2.7rem);letter-spacing:-.03em;color:var(--ink)}
 @media(max-width:600px){.nap-stats{gap:.02rem}}
